@@ -1,0 +1,22 @@
+# Build
+build/
+cmake-build-*/
+*.o
+*.obj
+compile_commands.json
+
+# Dataset (downloaded, not committed)
+data/*
+!data/.gitkeep
+
+# Generated outputs (images, gifs, sample grids)
+out/*
+!out/.gitkeep
+
+# Metrics / logs
+*.csv
+*.log
+
+# OS / editor
+.DS_Store
+*.sync-conflict-*
