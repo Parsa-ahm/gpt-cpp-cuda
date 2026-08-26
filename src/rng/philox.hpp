@@ -1,61 +1,48 @@
 #pragma once
 //
-// Counter-based PRNG (Philox 4x32-10), hand-written.
-// ---------------------------------------------------------------------------
-// WHY counter-based: every parallel GPU thread needs its own independent random
-// stream with NO shared state and NO locks. A counter-based generator gives that
-// for free: the random value is a stateless function f(key, counter). Thread i at
-// step t just evaluates f(seed, {i, t}) -- fully reproducible, embarrassingly
-// parallel. This is exactly what curand uses internally; hand-writing it is the
-// legit systems flex, not a toy.
+// ============================================================================
+// SPEC — Counter-based PRNG (Philox 4x32-10).   YOU implement all of this.
+// (Per the collaboration model: this file states WHAT to build and the reference
+//  constants; the interface design and the code are yours to write below.)
+// ============================================================================
+//
+// WHY counter-based (the idea you must internalize before coding):
+//   Every parallel GPU thread needs its own independent random stream with NO
+//   shared state and NO locks. A counter-based generator makes the random value
+//   a *stateless pure function* of (key, counter):   value = f(key, counter).
+//   So thread i at step t just evaluates f(seed, {i, t, ...}). Fully
+//   reproducible, embarrassingly parallel, zero coordination. This is what
+//   cuRAND does internally; hand-writing it is the point.
+//
+// WHAT to build (semantics — not signatures; you choose the interface):
+//   1. A stateless core: a bijection that maps a 128-bit counter (four uint32)
+//      under a 64-bit key (two uint32) to four uniform-random uint32 words, via
+//      10 Philox rounds. Same (counter, key) MUST always give the same output.
+//      Per round: split the counter into two (hi, lo) pairs; each pair is mixed
+//      by a 32x32->64 multiply with a fixed multiplier, then the high/low halves
+//      are xor-combined with the key and the other lane. Between rounds, bump the
+//      two key words by the Weyl constants below. (Derive the exact round from
+//      the paper — that derivation is part of the learning.)
+//   2. A per-thread wrapper: key = seed, counter = {tid, step, ...}; a "next"
+//      operation that advances step and returns 4 fresh words.
+//   3. Converters: uint32 -> uniform float in [0,1); and two uniforms -> a
+//      standard normal via Box-Muller (you'll need Gaussian noise everywhere).
+//   4. Must compile and give identical results on host and device (guard the
+//      __host__ __device__ qualifiers so CPU tests can run).
+//
+// REFERENCE CONSTANTS (published values from the paper — provided so your output
+// matches the known-answer test vectors the test harness will check):
+//   round multipliers:  M0 = 0xD2511F53   (mixes counter lane 0)
+//                       M1 = 0xCD9E8D57   (mixes counter lane 2)
+//   key Weyl bumps:     W0 = 0x9E3779B9   (golden ratio)
+//                       W1 = 0xBB67AE85   (sqrt 3 fractional)
+//   rounds: 10
 //
 // Reference: Salmon, Moraes, Dror, Shaw, "Parallel Random Numbers: As Easy as
-// 1, 2, 3", SC'11. Philox-4x32-10 = 10 rounds over a 4x32-bit counter with a
-// 2x32-bit key, using two fixed multipliers and the Weyl constants below.
+// 1, 2, 3", SC'11.
 //
-// STATUS: STUB. Bodies come first; the test harness
-// (statistical + known-answer-test vectors from the paper) comes separately.
-// ---------------------------------------------------------------------------
+// Once the bodies are in, the test harness (known-answer vectors
+// + statistical uniformity/normality checks + host==device equality) comes next.
+// ============================================================================
 
-#include <cstdint>
-
-// Usable on both host and device once implemented. (__host__ __device__ is a
-// no-op under a plain C++ compiler via this guard, so tests can run on CPU.)
-#ifndef PHILOX_HD
-#  if defined(__CUDACC__)
-#    define PHILOX_HD __host__ __device__
-#  else
-#    define PHILOX_HD
-#  endif
-#endif
-
-namespace rng {
-
-// Philox constants (from the paper). Provided so the KAT vectors line up.
-constexpr uint32_t kPhiloxM0 = 0xD2511F53u;  // multiplier for lane 0
-constexpr uint32_t kPhiloxM1 = 0xCD9E8D57u;  // multiplier for lane 2
-constexpr uint32_t kPhiloxW0 = 0x9E3779B9u;  // key Weyl bump (golden ratio)
-constexpr uint32_t kPhiloxW1 = 0xBB67AE85u;  // key Weyl bump (sqrt 3)
-
-struct uint4x { uint32_t x, y, z, w; };
-struct uint2x { uint32_t x, y; };
-
-// Stateless core: 10-round Philox bijection of a 128-bit counter under a 64-bit key.
-// Returns four uniform-random 32-bit words. Same (counter, key) -> same output.
-//   TODO(parsa): implement the single-round function then loop it 10 times,
-//   bumping the key by (kPhiloxW0, kPhiloxW1) between rounds.
-PHILOX_HD inline uint4x philox4x32_10(uint4x counter, uint2x key);
-
-// Convenience wrapper: a thread's stream. key = seed; counter = {tid, step, 0, 0}.
-// next() advances the step and returns 4 fresh words.
-struct Philox {
-  uint2x key;       // seed
-  uint4x counter;   // {tid, step, hi, lo}
-
-  PHILOX_HD Philox(uint64_t seed, uint64_t tid);  // TODO(parsa)
-  PHILOX_HD uint4x next_uint4();                    // TODO(parsa): calls core, ++step
-  PHILOX_HD float  next_uniform();                  // TODO(parsa): one u32 -> [0,1)
-  PHILOX_HD float  next_normal();                   // TODO(parsa): Box-Muller from two uniforms
-};
-
-}  // namespace rng
+// ---- your implementation below ----
