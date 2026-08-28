@@ -32,3 +32,21 @@ target_include_directories(inpaint PRIVATE src third_party)
 target_compile_options(inpaint PRIVATE
   $<$<COMPILE_LANGUAGE:CXX>:-Wall -Wextra>
 )
+
+# --- Tests ---
+enable_testing()
+
+add_executable(test_philox tests/test_philox.cu)
+set_target_properties(test_philox PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+target_include_directories(test_philox PRIVATE src third_party)
+add_test(NAME philox COMMAND test_philox)
+
+add_executable(test_philox_stream tests/test_philox_stream.cu)
+set_target_properties(test_philox_stream PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+target_include_directories(test_philox_stream PRIVATE src third_party)
+add_test(NAME philox_stream COMMAND test_philox_stream)
+
+add_executable(test_philox_dist tests/test_philox_dist.cu)
+set_target_properties(test_philox_dist PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+target_include_directories(test_philox_dist PRIVATE src third_party)
+add_test(NAME philox_dist COMMAND test_philox_dist)
