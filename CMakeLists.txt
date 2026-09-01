@@ -50,3 +50,15 @@ add_executable(test_philox_dist tests/test_philox_dist.cu)
 set_target_properties(test_philox_dist PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 target_include_directories(test_philox_dist PRIVATE src third_party)
 add_test(NAME philox_dist COMMAND test_philox_dist)
+
+add_executable(test_gemm tests/test_gemm.cu)
+set_target_properties(test_gemm PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+target_include_directories(test_gemm PRIVATE src third_party)
+add_test(NAME gemm COMMAND test_gemm)
+
+# Benchmark: links cuBLAS as a PERF REFERENCE only (never in the model path).
+find_package(CUDAToolkit REQUIRED)
+add_executable(bench_gemm tests/bench_gemm.cu)
+set_target_properties(bench_gemm PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+target_include_directories(bench_gemm PRIVATE src third_party)
+target_link_libraries(bench_gemm PRIVATE CUDA::cublas)
