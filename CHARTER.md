@@ -85,8 +85,20 @@ token embedding + learned positional embedding → N × [LayerNorm → causal mu
 residual → LayerNorm → MLP (Linear 4x, GELU, Linear) → residual] → final LayerNorm → tied
 LM head → cross-entropy. AdamW. Cosine LR with warmup.
 
-- **Rung 3 training config:** ~10M params (e.g. n_layer 6, n_head 6, n_embd 384, ctx 256),
-  TinyShakespeare (char or GPT-2 BPE) or TinyStories subset. Fits 8 GB FP32 comfortably.
+- **Rung 3 training config:** n_layer 6, n_head 6, n_embd 384, ctx 256 (~10M transformer params;
+  + 19.3M tied embedding at vocab 50257 = ~29M total. Say that honestly in the writeup).
+  Fits 8 GB FP32 comfortably.
+- **Rung 3 corpus (decided 2026-09-17):** Friends transcripts, all 10 seasons, formatted
+  `SPEAKER: line` with scene headers kept. ~6 MB, ~1.5M GPT-2 BPE tokens. Chosen because the
+  rigid speaker/scene structure makes samples read as coherent at a much higher loss than
+  long-form prose does at this scale, and because speaker prefixes give free character
+  conditioning: prompt `JOEY:` and the model continues in that voice. That is the R3 demo.
+  Corpus is copyrighted: `data/prepare_friends.py` downloads + cleans + tokenizes, the text
+  and the .bin files stay gitignored. TinyShakespeare kept as the reproducible baseline run
+  so a clean clone can verify the training loop without the scraped corpus.
+- **Tokenizer:** GPT-2 BPE (`tiktoken`) for both R3 and R4. One tokenizer path in the engine,
+  and R4's vocab/embedding shapes get exercised from R3 onward. We will overfit ~1.5M tokens
+  with ~29M params; that is expected at this scale, report train and val loss and say so.
 - **Rung 4 inference config:** GPT-2 124M (12 layers, 12 heads, 768, ctx 1024, vocab 50257),
   weights loaded from a flat binary exported from HuggingFace.
 
@@ -103,8 +115,8 @@ LM head → cross-entropy. AdamW. Cosine LR with warmup.
   AV via cuBLAS; backward through all of it) → cross-entropy (fused with softmax) → AdamW update.
   *Artifact:* every op passes gradient check at 1e-4 rel. **← the hard rung.**
 - **Rung 3 — Train.** Compose the ops into the GPT forward, the backward in reverse, the training
-  loop, LR schedule, checkpointing. Train ~10M on TinyShakespeare. *Artifact:* loss curve to ~1.5
-  (char) / samples that read as Shakespeare-ish. **← ML floor.**
+  loop, LR schedule, checkpointing. Train on Friends (see §6). *Artifact:* loss curve + samples
+  that read as the show, conditioned on a character prefix. **← ML floor.**
 - **Rung 4 — Real weights.** Python exports HF GPT-2 124M to flat binary + reference logits for a
   fixed prompt. Engine loads, runs forward, matches logits (max abs diff < 1e-3 FP32), samples
   text with top-k. *Artifact:* coherent GPT-2 text from our engine. **← the "it's real" proof.**
