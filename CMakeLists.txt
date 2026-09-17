@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(image_inpainting LANGUAGES CXX CUDA)
+project(gpt_cpp_cuda LANGUAGES CXX CUDA)
 
 # --- Standards ---
 set(CMAKE_CXX_STANDARD 17)
@@ -21,15 +21,15 @@ endif()
 
 # --- Main executable ---
 # Add source files here as rungs land. Keep files small and focused.
-add_executable(inpaint
+add_executable(gpt
   src/main.cpp
   src/cuda_check.cu
 )
-set_target_properties(inpaint PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-target_include_directories(inpaint PRIVATE src third_party)
+set_target_properties(gpt PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+target_include_directories(gpt PRIVATE src third_party)
 
 # Warnings on for host code (keep the bar high).
-target_compile_options(inpaint PRIVATE
+target_compile_options(gpt PRIVATE
   $<$<COMPILE_LANGUAGE:CXX>:-Wall -Wextra>
 )
 

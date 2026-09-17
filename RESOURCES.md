@@ -35,36 +35,35 @@ time. Concepts first; you write the code.
   (matmul, memory, profiling). Excellent once you're past the basics.
 - PMPP chapters 3–6.
 
-## Rung 2 — Reverse-mode autodiff (then its GPU kernels)
+## Rung 2 — Transformer ops, forward + backward
 
-- **Andrej Karpathy, "The spelled-out intro to neural networks and backprop: building micrograd"**
-  (YouTube). Builds reverse-mode autodiff from zero. It's Python, but the *concept* — the graph, the
-  chain rule as a backward pass — transfers directly to what you'll do in C++/CUDA. Watch before you
-  design your tape.
-- **Baydin et al., "Automatic Differentiation in Machine Learning: a Survey"** — the reference for
-  forward vs reverse mode and why reverse is right for scalar-loss training.
-- For backward kernels of matmul/conv: derive them yourself from the forward pass; the matmul
-  backward is two more matmuls (dA = dC·Bᵀ, dB = Aᵀ·dC) — good to prove on paper first.
+- **Karpathy, "Let's reproduce GPT-2 (124M)"** (YouTube, 4h). THE spec. Watch before coding; do not
+  code along in PyTorch. Note every shape.
+- **Karpathy, "Let's build GPT: from scratch, in code, spelled out"** — the smaller precursor;
+  attention explained slowest here.
+- **Backward passes by hand:** derive each on paper before writing the kernel. LayerNorm backward
+  and softmax-cross-entropy backward are the two people get wrong. Murphy PML1 ch.13 (backprop)
+  and the CS231n notes on backprop are enough.
+- **cuBLAS row-major trick:** cuBLAS is column-major; a row-major C = A·B is the column-major
+  C^T = B^T·A^T, so call `cublasSgemm` with the operands swapped. One test, then never think
+  about it again.
+- **llm.c** (Karpathy) — the reference implementation of exactly this project in C/CUDA. Rule:
+  read a piece of it only *after* your version of that piece passes its test.
 
-## Rungs 3–5 — Score-based generative modeling + sampling + inpainting
+## Rung 3 — Training
 
-- **Yang Song, "Generative Modeling by Estimating Gradients of the Data Distribution"**
-  (yang-song.net/blog/2021/score) — the canonical, readable explainer of score matching + annealed
-  Langevin, by the person who invented the method. **Read this first for the ML spine.**
-- **Lilian Weng, "What are Diffusion Models?"** (lilianweng.github.io) — clear, well-diagrammed
-  overview tying score-based ↔ DDPM.
-- **Papers:** Vincent 2011 (Denoising Score Matching — your exact training target); Song & Ermon 2019
-  (NCSN — the model + annealed Langevin you're building); Ho et al. 2020 (DDPM — the connection).
-- **YouTube:** Outlier, *"Diffusion Models | Paper Explanation | Math Explained"* (best visual
-  intro); Jia-Bin Huang, *"How I Understand Diffusion Models"* (very clear intuition).
-- Murphy Advanced Topics — diffusion / score-based chapter for the rigorous version.
+- GPT-2 paper (Radford 2019) §2 for the architecture table. AdamW (Loshchilov 2019).
+  Cosine schedule with warmup as in the Karpathy video. TinyShakespeare from Karpathy's
+  char-rnn repo; `tiktoken` GPT-2 BPE if using real tokens.
 
-## Situating (for the writeup + interviews)
+## Rung 4 — Real weights
 
-- Flow matching / rectified flow: Lipman et al. 2022; Liu et al. 2022. (Why frontier labs moved on.)
-- Consistency models: Song et al. 2023. (One-step sampling.)
+- HuggingFace `transformers` GPT2LMHeadModel for the export script and reference logits (Python,
+  outside the engine). Watch for the Conv1D weight layout (HF stores W as [in, out]).
 
-## Profiling tools (Rung 6)
+## Rung 5 — Fused attention + benchmarks
 
-- **Nsight Compute** (`ncu`) and **Nsight Systems** (`nsys`) — installed with the CUDA toolkit. `ncu`
-  gives you occupancy, memory throughput, and the roofline for each kernel.
+- **Dao et al. 2022, FlashAttention** — the algorithm (online softmax, tiling over K/V). Read §3.
+- **GPU MODE lectures** (YouTube) on attention kernels and profiling with Nsight Compute.
+- Boehm's SGEMM article again for the chart format: % of cuBLAS per kernel version.
+- PMPP ch. 5-6 (memory, tiling), ch. 10 (reduction) for the softmax kernel.

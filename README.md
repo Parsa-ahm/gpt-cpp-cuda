@@ -1,31 +1,39 @@
-# image-inpainting-cpp-cuda
+# gpt-cpp-cuda
 
-A **score-based generative image model built from first principles in C++/CUDA** — hand-written
-reverse-mode autodiff, a trained score network (denoising score matching), annealed Langevin
-sampling, and hand-written CUDA sampling kernels. Demonstrated on **image inpainting**: give it an
-image with a region removed, it fills the region back in.
+A **GPT training and inference engine written from scratch in C++ and CUDA**. No PyTorch, no JAX.
+Forward and backward kernels for every op are hand-written; matmuls go through cuBLAS, and the
+same matmul is also implemented by hand and benchmarked against it.
 
-**Zero ML frameworks.** No PyTorch, JAX, TensorFlow, cuDNN, or cuBLAS in the learning core. The
-autodiff, model, training loop, PRNG, and sampling kernels are all hand-written.
+What it does when finished:
+- trains a ~10M-parameter GPT on a small corpus on a single consumer GPU
+- loads OpenAI's GPT-2 124M weights and matches HuggingFace logits, then generates text
+- ships a fused attention kernel and an SGEMM ladder with benchmarks and a roofline
 
-See [`CHARTER.md`](./CHARTER.md) for the full purpose, thesis, non-goals, and build ladder — read
-it before contributing (it is the single source of truth).
+See [`CHARTER.md`](./CHARTER.md) for purpose, thesis, boundaries, and the build ladder. It is the
+single source of truth.
 
 ## Status
 
-Rung 0 (scaffold). Build system + GPU sanity check in place; PRNG in progress.
+| Rung | State |
+|---|---|
+| 0 Scaffold + Philox PRNG | done |
+| 1 SGEMM ladder (naive / tiled / register-blocked, ~40% cuBLAS) | done |
+| 2 Ops fwd+bwd, gradient-checked | in progress |
+| 3 Train small GPT | |
+| 4 GPT-2 124M weights, match HF logits | |
+| 5 Fused attention + benchmarks + roofline | |
+| 6 Writeup | |
 
 ## Requirements
 
-- NVIDIA GPU (developed on an RTX 2070 SUPER, `sm_75`)
-- CUDA toolkit (`nvcc`) + CMake ≥ 3.24 + a C++17 host compiler
-- Note: CUDA 12.0's `nvcc` rejects gcc/g++ 13 — install `g++-12` and configure with
-  `-DCMAKE_CUDA_HOST_COMPILER=$(which g++-12)` if you hit a host-compiler version error.
+- NVIDIA GPU (developed on an RTX 2070 SUPER, `sm_75`), CUDA 12.x with cuBLAS
+- CMake >= 3.24, C++17 host compiler (CUDA 12.0 needs `g++-12`)
 
-## Build
+## Build and test
 
 ```sh
-cmake -S . -B build            # add -DCMAKE_CUDA_HOST_COMPILER=$(which g++-12) if needed
+cmake -S . -B build -DCMAKE_CUDA_HOST_COMPILER=$(which g++-12)
 cmake --build build -j
-./build/inpaint                # Rung 0: prints banner + reports the GPU
+ctest --test-dir build
+./build/bench_gemm      # hand-written SGEMM vs cuBLAS
 ```
