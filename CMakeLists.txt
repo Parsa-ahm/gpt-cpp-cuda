@@ -51,6 +51,16 @@ set_target_properties(test_philox_dist PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 target_include_directories(test_philox_dist PRIVATE src third_party)
 add_test(NAME philox_dist COMMAND test_philox_dist)
 
+add_executable(test_residual tests/test_residual.cu)
+set_target_properties(test_residual PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+target_include_directories(test_residual PRIVATE src third_party)
+add_test(NAME residual COMMAND test_residual)
+
+add_executable(test_gelu tests/test_gelu.cu)
+set_target_properties(test_gelu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+target_include_directories(test_gelu PRIVATE src third_party)
+add_test(NAME gelu COMMAND test_gelu)
+
 add_executable(test_gemm tests/test_gemm.cu)
 set_target_properties(test_gemm PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 target_include_directories(test_gemm PRIVATE src third_party)
