@@ -1,41 +1,4 @@
 #pragma once
-// ============================================================================
-// SPEC — naive SGEMM (single-precision matrix multiply).   YOU implement this.
-//
-// Computes  C = A * B  in float, row-major.  A is MxK, B is KxN, C is MxN.
-// This is the CORRECTNESS baseline: one thread per output element, global-memory
-// reads straight through, NO shared memory. We optimize (tiling) in a later pass
-// once this matches the CPU oracle.
-//
-// TWO things to write:
-//
-//  (1) __global__ void sgemm_naive(const float* A, const float* B, float* C,
-//                                  int M, int N, int K)
-//      - each thread owns one C[row][col].
-//      - col = blockIdx.x*blockDim.x + threadIdx.x   (x -> columns, N)
-//        row = blockIdx.y*blockDim.y + threadIdx.y   (y -> rows,    M)
-//      - bounds: if (row < M && col < N) { ... }   (grid overshoots; guard it)
-//      - accumulate in a local float, starting at 0.0f:
-//            sum += A[row*K + k] * B[k*N + col]   for k = 0..K-1
-//        then write once:  C[row*N + col] = sum
-//      - row-major offset rule: element [r][c] of a WIDTH-wide matrix is at
-//        base[r*WIDTH + c].  (A width=K, B width=N, C width=N.)
-//
-//  (2) a host launcher that sets the grid/block and launches the kernel:
-//        void launch_sgemm_naive(const float* dA, const float* dB, float* dC,
-//                                int M, int N, int K)
-//      - dim3 threads(16,16);  dim3 blocks((N+15)/16, (M+15)/16);
-//      - launch, then check for launch errors + synchronize.
-//      - pointers are DEVICE pointers (already uploaded via device_buffer).
-//
-// NOTE: mark the kernel/launcher so this header can be included by a test .cu
-// without multiple-definition errors (e.g. keep the launcher `inline`).
-//
-// The test will upload A,B, call launch_sgemm_naive, download C, and compare to
-// a CPU triple-loop oracle within a float tolerance (matmul rounds, so "close",
-// not bit-exact). Shapes include non-square and non-multiples-of-16 to exercise
-// your bounds check.
-// ============================================================================
 
 #include <cuda_runtime.h>
 
