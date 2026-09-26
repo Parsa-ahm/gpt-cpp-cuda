@@ -9,10 +9,6 @@ compile_commands.json
 data/*
 !data/.gitkeep
 
-# Generated outputs (images, gifs, sample grids)
-out/*
-!out/.gitkeep
-
 # Metrics / logs
 *.csv
 *.log

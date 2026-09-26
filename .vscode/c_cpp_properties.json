@@ -10,7 +10,6 @@
       "compileCommands": "${workspaceFolder}/build/compile_commands.json",
       "includePath": [
         "${workspaceFolder}/src",
-        "${workspaceFolder}/third_party",
         "/usr/include"
       ],
       "defines": [],
