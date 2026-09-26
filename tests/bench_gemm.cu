@@ -40,14 +40,19 @@ static int gM, gK, gN;
 static float *gA, *gB, *gC;
 static cublasHandle_t gHandle;
 
-static void run_mine() { launch_gemm(gA, gB, gC, gM, gK, gN); }
-static void run_tiled() { launch_gemm_tiled(gA, gB, gC, gM, gK, gN); }
-static void run_reg() { launch_gemm_reg(gA, gB, gC, gM, gK, gN); }
+static void run_mine() {
+    launch_gemm(gA, gB, gC, gM, gK, gN);
+}
+static void run_tiled() {
+    launch_gemm_tiled(gA, gB, gC, gM, gK, gN);
+}
+static void run_reg() {
+    launch_gemm_reg(gA, gB, gC, gM, gK, gN);
+}
 static void run_cublas() {
     const float alpha = 1.0f, beta = 0.0f;
     // row-major C = A*B  computed as column-major  C^T = B^T * A^T
-    cublasSgemm(gHandle, CUBLAS_OP_N, CUBLAS_OP_N, gN, gM, gK, &alpha, gB, gN, gA, gK, &beta, gC,
-                gN);
+    cublasSgemm(gHandle, CUBLAS_OP_N, CUBLAS_OP_N, gN, gM, gK, &alpha, gB, gN, gA, gK, &beta, gC, gN);
 }
 
 static void bench(int n) {
@@ -74,8 +79,15 @@ static void bench(int n) {
 
     std::printf(
         "  N=%-5d  naive %6.0f (%.0f%%)  tiled %6.0f (%.0f%%)  reg %6.0f (%.0f%%)  cuBLAS %6.0f\n",
-        n, g_mine, 100.0 * g_mine / g_cub, g_tiled, 100.0 * g_tiled / g_cub, g_reg,
-        100.0 * g_reg / g_cub, g_cub);
+        n,
+        g_mine,
+        100.0 * g_mine / g_cub,
+        g_tiled,
+        100.0 * g_tiled / g_cub,
+        g_reg,
+        100.0 * g_reg / g_cub,
+        g_cub
+    );
 
     dA.free_it();
     dB.free_it();

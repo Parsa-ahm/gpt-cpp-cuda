@@ -1,17 +1,37 @@
 ---
 Language: Cpp
 BasedOnStyle: Google
+
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
-ColumnLimit: 100
+ColumnLimit: 0
 AccessModifierOffset: -4
+
 PointerAlignment: Left
 DerivePointerAlignment: false
+
+# Kernel signatures: break after the open paren, one parameter per line,
+# closing paren on its own line. Short signatures still fit on one line.
+AlignAfterOpenBracket: BlockIndent
+BinPackParameters: false
+BinPackArguments: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllArgumentsOnNextLine: false
+
+# Guard clauses stay on one line: if (i >= n) return;
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: true
+AllowShortBlocksOnASingleLine: Empty
 AllowShortFunctionsOnASingleLine: Empty
-AllowShortIfStatementsOnASingleLine: false
-AllowShortLoopsOnASingleLine: false
+
+# Leave long explanatory trailing comments alone instead of rewrapping them.
+ReflowComments: false
+AlignTrailingComments: true
+
 BreakBeforeBraces: Attach
-SortIncludes: false
 SpaceBeforeParens: ControlStatements
+SortIncludes: false
+IndentPPDirectives: None
+MaxEmptyLinesToKeep: 2
 ...

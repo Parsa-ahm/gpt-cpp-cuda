@@ -58,13 +58,11 @@ static const int NCASES = sizeof(KAT) / sizeof(KAT[0]);
 // ---- device side: run philox() inside a kernel --------------------------------
 // One thread per case. Copies its ctr/key into locals so philox()'s
 // reference-to-array parameters can bind, then writes the 4 output words.
-__global__ void philox_kernel(const uint32_t* ctr_in, const uint32_t* key_in, uint32_t* out,
-                              int n) {
+__global__ void philox_kernel(const uint32_t* ctr_in, const uint32_t* key_in, uint32_t* out, int n) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= n)
         return;
-    uint32_t c[4] = {ctr_in[idx * 4 + 0], ctr_in[idx * 4 + 1], ctr_in[idx * 4 + 2],
-                     ctr_in[idx * 4 + 3]};
+    uint32_t c[4] = {ctr_in[idx * 4 + 0], ctr_in[idx * 4 + 1], ctr_in[idx * 4 + 2], ctr_in[idx * 4 + 3]};
     uint32_t k[2] = {key_in[idx * 2 + 0], key_in[idx * 2 + 1]};
     Philox4 r = philox(c, k);
     for (int j = 0; j < 4; ++j)
@@ -149,7 +147,6 @@ int main() {
     CUDA_CHECK(cudaFree(d_key));
     CUDA_CHECK(cudaFree(d_out));
 
-    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures,
-                failures == 1 ? "" : "s");
+    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;
 }

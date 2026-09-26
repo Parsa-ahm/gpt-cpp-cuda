@@ -29,8 +29,7 @@
 
 // ---------------------------------------------------------------- CPU oracles
 
-static void cpu_emb_fwd(const int* ids, const float* wte, const float* wpe, float* out, int B,
-                        int T, int C) {
+static void cpu_emb_fwd(const int* ids, const float* wte, const float* wpe, float* out, int B, int T, int C) {
     for (int b = 0; b < B; ++b)
         for (int t = 0; t < T; ++t) {
             int id = ids[b * T + t];
@@ -39,8 +38,7 @@ static void cpu_emb_fwd(const int* ids, const float* wte, const float* wpe, floa
         }
 }
 
-static void cpu_emb_bwd(const int* ids, const float* dout, float* dwte, float* dwpe, int B, int T,
-                        int C, int V) {
+static void cpu_emb_bwd(const int* ids, const float* dout, float* dwte, float* dwpe, int B, int T, int C, int V) {
     std::vector<double> awte((size_t)V * C, 0.0), awpe((size_t)T * C, 0.0);
     for (int b = 0; b < B; ++b)
         for (int t = 0; t < T; ++t) {
@@ -68,8 +66,7 @@ static float worst_err(const std::vector<float>& got, const std::vector<float>& 
 
 static bool report(const char* label, int B, int T, int C, int V, float err, float tol) {
     bool ok = err <= tol;
-    std::printf("  B=%-3d T=%-4d C=%-4d V=%-6d %-24s err=%.2e  %s\n", B, T, C, V, label, err,
-                ok ? "PASS" : "FAIL");
+    std::printf("  B=%-3d T=%-4d C=%-4d V=%-6d %-24s err=%.2e  %s\n", B, T, C, V, label, err, ok ? "PASS" : "FAIL");
     return ok;
 }
 
@@ -77,16 +74,18 @@ static bool report(const char* label, int B, int T, int C, int V, float err, flo
 
 struct Int_Buffer {
     int* ptr = nullptr;
-    explicit Int_Buffer(int n) { cudaMalloc(&ptr, (size_t)n * sizeof(int)); }
+    explicit Int_Buffer(int n) {
+        cudaMalloc(&ptr, (size_t)n * sizeof(int));
+    }
     void upload(const int* host, int n) {
         cudaMemcpy(ptr, host, (size_t)n * sizeof(int), cudaMemcpyHostToDevice);
     }
-    void free_it() { cudaFree(ptr); }
+    void free_it() {
+        cudaFree(ptr);
+    }
 };
 
-static void gpu_forward(const std::vector<int>& ids, const std::vector<float>& wte,
-                        const std::vector<float>& wpe, std::vector<float>& out, int B, int T, int C,
-                        int V) {
+static void gpu_forward(const std::vector<int>& ids, const std::vector<float>& wte, const std::vector<float>& wpe, std::vector<float>& out, int B, int T, int C, int V) {
     Int_Buffer d_ids(B * T);
     Device_Buffer d_wte(V * C), d_wpe(T * C), d_out(B * T * C);
     d_ids.upload(ids.data(), B * T);
@@ -100,10 +99,7 @@ static void gpu_forward(const std::vector<int>& ids, const std::vector<float>& w
     d_out.free_it();
 }
 
-static void gpu_backward(const std::vector<int>& ids, const std::vector<float>& dout,
-                         const std::vector<float>& seed_wte, const std::vector<float>& seed_wpe,
-                         std::vector<float>& gwte, std::vector<float>& gwpe, int B, int T, int C,
-                         int V) {
+static void gpu_backward(const std::vector<int>& ids, const std::vector<float>& dout, const std::vector<float>& seed_wte, const std::vector<float>& seed_wpe, std::vector<float>& gwte, std::vector<float>& gwpe, int B, int T, int C, int V) {
     Int_Buffer d_ids(B * T);
     Device_Buffer d_dout(B * T * C), d_dwte(V * C), d_dwpe(T * C);
     d_ids.upload(ids.data(), B * T);
@@ -232,10 +228,10 @@ int main() {
         int B, T, C, V;
     };
     S shapes[] = {
-        {2, 4, 3, 5},       // tiny, heavy collisions
-        {3, 7, 5, 4},       // more tokens than vocab: every row of wte gets hit
-        {4, 64, 384, 512},  // GPT-2 small width
-        {2, 128, 768, 1024} // GPT-2 124M width
+        {2, 4, 3, 5},        // tiny, heavy collisions
+        {3, 7, 5, 4},        // more tokens than vocab: every row of wte gets hit
+        {4, 64, 384, 512},   // GPT-2 small width
+        {2, 128, 768, 1024}  // GPT-2 124M width
     };
 
     std::printf("[embedding forward]\n");
@@ -255,7 +251,6 @@ int main() {
     for (S s : small)
         if (!test_finite_difference(s.B, s.T, s.C, s.V, rng)) ++failures;
 
-    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures,
-                failures == 1 ? "" : "s");
+    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;
 }

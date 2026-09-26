@@ -20,14 +20,13 @@ int report_cuda_devices();
 // The do/while(0) wrapper is a C idiom, not decoration: it makes the macro one
 // statement, so `if (x) CUDA_CHECK(...); else ...` parses the way you expect.
 // ---------------------------------------------------------------------------
-#define CUDA_CHECK(expr)                                                                      \
-    do {                                                                                      \
-        cudaError_t err_ = (expr);                                                            \
-        if (err_ != cudaSuccess) {                                                            \
-            std::fprintf(stderr, "CUDA error %s:%d: %s\n  in: %s\n", __FILE__, __LINE__,      \
-                         cudaGetErrorString(err_), #expr);                                    \
-            std::exit(1);                                                                     \
-        }                                                                                     \
+#define CUDA_CHECK(expr)                                                                                                   \
+    do {                                                                                                                   \
+        cudaError_t err_ = (expr);                                                                                         \
+        if (err_ != cudaSuccess) {                                                                                         \
+            std::fprintf(stderr, "CUDA error %s:%d: %s\n  in: %s\n", __FILE__, __LINE__, cudaGetErrorString(err_), #expr); \
+            std::exit(1);                                                                                                  \
+        }                                                                                                                  \
     } while (0)
 
 // ---------------------------------------------------------------------------
@@ -43,8 +42,8 @@ int report_cuda_devices();
 // cost throughput. Fine for Rung 2 tests; the training loop in Rung 3 will drop
 // the sync from the hot path and check at step boundaries instead.
 // ---------------------------------------------------------------------------
-#define CUDA_CHECK_KERNEL()                \
-    do {                                   \
-        CUDA_CHECK(cudaGetLastError());    \
+#define CUDA_CHECK_KERNEL()                  \
+    do {                                     \
+        CUDA_CHECK(cudaGetLastError());      \
         CUDA_CHECK(cudaDeviceSynchronize()); \
     } while (0)

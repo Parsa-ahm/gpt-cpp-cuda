@@ -125,8 +125,7 @@ static bool test_backward_analytic(int n, std::mt19937& rng) {
         if (e > worst) worst = e;
     }
     bool ok = worst < 1e-5f;
-    std::printf("  n=%-6d  bwd   max rel err=%.2e  %s   (vs analytic oracle)\n", n, worst,
-                ok ? "PASS" : "FAIL");
+    std::printf("  n=%-6d  bwd   max rel err=%.2e  %s   (vs analytic oracle)\n", n, worst, ok ? "PASS" : "FAIL");
     return ok;
 }
 
@@ -173,8 +172,7 @@ static bool test_backward_finite_difference(int n, std::mt19937& rng) {
         }
     }
     bool ok = worst < 2e-3f;
-    std::printf("  n=%-6d  bwd   max rel err=%.2e  %s   (vs finite diff, h=%.0e, worst at x=%.3f)\n",
-                n, worst, ok ? "PASS" : "FAIL", h, x[worst_i]);
+    std::printf("  n=%-6d  bwd   max rel err=%.2e  %s   (vs finite diff, h=%.0e, worst at x=%.3f)\n", n, worst, ok ? "PASS" : "FAIL", h, x[worst_i]);
     return ok;
 }
 
@@ -197,7 +195,6 @@ int main() {
     for (int n : sizes)
         if (!test_backward_finite_difference(n, rng)) ++failures;
 
-    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures,
-                failures == 1 ? "" : "s");
+    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;
 }

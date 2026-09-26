@@ -26,8 +26,7 @@
     } while (0)
 
 // draw n words from a fresh host stream at the given coordinates
-static void host_stream(uint32_t element, uint32_t iter, uint32_t stream, uint32_t s0, uint32_t s1,
-                        uint32_t* out, int n) {
+static void host_stream(uint32_t element, uint32_t iter, uint32_t stream, uint32_t s0, uint32_t s1, uint32_t* out, int n) {
     PhiloxStream s;
     uint32_t ctr[4] = {element, iter, stream, 0};
     uint32_t seed[2] = {s0, s1};
@@ -37,8 +36,7 @@ static void host_stream(uint32_t element, uint32_t iter, uint32_t stream, uint32
 }
 
 // one thread per coordinate tuple; each draws n words into out[idx*n ...]
-__global__ void stream_kernel(const uint32_t* elem, const uint32_t* it, const uint32_t* strm,
-                              uint32_t s0, uint32_t s1, uint32_t* out, int ntup, int n) {
+__global__ void stream_kernel(const uint32_t* elem, const uint32_t* it, const uint32_t* strm, uint32_t s0, uint32_t s1, uint32_t* out, int ntup, int n) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx >= ntup)
         return;
@@ -66,8 +64,7 @@ int main() {
         uint32_t c1[4] = {E, IT, ST, 1};
         Philox4 b0 = philox(c0, seed);
         Philox4 b1 = philox(c1, seed);
-        uint32_t expect[8] = {b0.w[0], b0.w[1], b0.w[2], b0.w[3],
-                              b1.w[0], b1.w[1], b1.w[2], b1.w[3]};
+        uint32_t expect[8] = {b0.w[0], b0.w[1], b0.w[2], b0.w[3], b1.w[0], b1.w[1], b1.w[2], b1.w[3]};
         bool ok = true;
         for (int i = 0; i < 8; ++i)
             if (got[i] != expect[i])
@@ -156,7 +153,6 @@ int main() {
         CUDA_CHECK(cudaFree(d_out));
     }
 
-    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures,
-                failures == 1 ? "" : "s");
+    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;
 }

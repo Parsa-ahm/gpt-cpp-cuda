@@ -22,8 +22,7 @@
 
 // Row-major CPU oracle for C = alpha * opA(A) @ opB(B) + beta * C.
 // A is (M,K) when !ta else (K,M);  B is (K,N) when !tb else (N,K).
-static void cpu_gemm_rm(bool ta, bool tb, int M, int N, int K, float alpha, const float* A,
-                        const float* B, float beta, float* C) {
+static void cpu_gemm_rm(bool ta, bool tb, int M, int N, int K, float alpha, const float* A, const float* B, float beta, float* C) {
     for (int m = 0; m < M; ++m)
         for (int n = 0; n < N; ++n) {
             float sum = 0.0f;
@@ -64,8 +63,7 @@ static bool run(bool ta, bool tb, int M, int N, int K, float beta, std::mt19937&
         if (d > worst) worst = d;
     }
     bool ok = worst < 1e-3f;
-    std::printf("  A%s B%s  M=%-4d N=%-4d K=%-4d beta=%.0f  max|err|=%.2e  %s\n",
-                ta ? "^T" : "  ", tb ? "^T" : "  ", M, N, K, beta, worst, ok ? "PASS" : "FAIL");
+    std::printf("  A%s B%s  M=%-4d N=%-4d K=%-4d beta=%.0f  max|err|=%.2e  %s\n", ta ? "^T" : "  ", tb ? "^T" : "  ", M, N, K, beta, worst, ok ? "PASS" : "FAIL");
     return ok;
 }
 
@@ -73,15 +71,17 @@ int main() {
     std::mt19937 rng(777);
     int failures = 0;
 
-    struct S { int M, N, K; };
+    struct S {
+        int M, N, K;
+    };
     S shapes[] = {
-        {2, 3, 4},       // tiny, easy to hand-check
-        {64, 64, 64},    // square
-        {128, 96, 64},   // rectangular
-        {37, 53, 41},    // all prime-ish, no nice divisibility
-        {1, 64, 32},     // single row
-        {64, 1, 32},     // single column
-        {256, 384, 128}, // transformer-ish
+        {2, 3, 4},        // tiny, easy to hand-check
+        {64, 64, 64},     // square
+        {128, 96, 64},    // rectangular
+        {37, 53, 41},     // all prime-ish, no nice divisibility
+        {1, 64, 32},      // single row
+        {64, 1, 32},      // single column
+        {256, 384, 128},  // transformer-ish
     };
 
     std::printf("[row-major sgemm via cuBLAS, all transpose combinations]\n");
@@ -98,7 +98,6 @@ int main() {
         if (!run(true, false, s.M, s.N, s.K, 1.0f, rng)) ++failures;
     }
 
-    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures,
-                failures == 1 ? "" : "s");
+    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;
 }

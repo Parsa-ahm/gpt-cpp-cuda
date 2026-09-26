@@ -28,8 +28,7 @@
 
 // ---------------------------------------------------------------- CPU oracles
 
-static void cpu_ce_fwd(const float* logits, const int* targets, float* losses, float* lse, int N,
-                       int V) {
+static void cpu_ce_fwd(const float* logits, const int* targets, float* losses, float* lse, int N, int V) {
     for (int n = 0; n < N; ++n) {
         double m = -1e30;
         for (int v = 0; v < V; ++v) m = std::fmax(m, (double)logits[n * V + v]);
@@ -41,8 +40,7 @@ static void cpu_ce_fwd(const float* logits, const int* targets, float* losses, f
     }
 }
 
-static void cpu_ce_bwd(const float* logits, const float* lse, const int* targets, float* dlogits,
-                       float dloss, int N, int V) {
+static void cpu_ce_bwd(const float* logits, const float* lse, const int* targets, float* dlogits, float dloss, int N, int V) {
     for (int n = 0; n < N; ++n)
         for (int v = 0; v < V; ++v) {
             double p = std::exp((double)logits[n * V + v] - (double)lse[n]);
@@ -72,15 +70,18 @@ static bool report(const char* label, int N, int V, float err, float tol) {
 
 struct Int_Buffer {
     int* ptr = nullptr;
-    explicit Int_Buffer(int n) { cudaMalloc(&ptr, (size_t)n * sizeof(int)); }
+    explicit Int_Buffer(int n) {
+        cudaMalloc(&ptr, (size_t)n * sizeof(int));
+    }
     void upload(const int* host, int n) {
         cudaMemcpy(ptr, host, (size_t)n * sizeof(int), cudaMemcpyHostToDevice);
     }
-    void free_it() { cudaFree(ptr); }
+    void free_it() {
+        cudaFree(ptr);
+    }
 };
 
-static void gpu_forward(const std::vector<float>& logits, const std::vector<int>& targets,
-                        std::vector<float>& losses, std::vector<float>& lse, int N, int V) {
+static void gpu_forward(const std::vector<float>& logits, const std::vector<int>& targets, std::vector<float>& losses, std::vector<float>& lse, int N, int V) {
     Device_Buffer d_log(N * V), d_loss(N), d_lse(N);
     Int_Buffer d_tgt(N);
     d_log.upload(const_cast<float*>(logits.data()));
@@ -94,9 +95,7 @@ static void gpu_forward(const std::vector<float>& logits, const std::vector<int>
     d_tgt.free_it();
 }
 
-static void gpu_backward(const std::vector<float>& logits, const std::vector<float>& lse,
-                         const std::vector<int>& targets, std::vector<float>& dlogits, float dloss,
-                         int N, int V) {
+static void gpu_backward(const std::vector<float>& logits, const std::vector<float>& lse, const std::vector<int>& targets, std::vector<float>& dlogits, float dloss, int N, int V) {
     Device_Buffer d_log(N * V), d_lse(N), d_dlog(N * V);
     Int_Buffer d_tgt(N);
     d_log.upload(const_cast<float*>(logits.data()));
@@ -129,8 +128,7 @@ static bool test_forward(int N, int V, std::mt19937& rng) {
     bool finite = true;
     for (int n = 0; n < N; ++n)
         if (!std::isfinite(losses[n]) || !std::isfinite(lse[n])) finite = false;
-    std::printf("  N=%-5d V=%-6d %-30s %s\n", N, V, "all losses finite",
-                finite ? "PASS" : "FAIL");
+    std::printf("  N=%-5d V=%-6d %-30s %s\n", N, V, "all losses finite", finite ? "PASS" : "FAIL");
 
     bool ok = finite;
     ok &= report("fwd  losses", N, V, worst_err(losses, rlosses), 1e-5f);
@@ -153,11 +151,9 @@ static bool test_known_answers(int V) {
 
     float e_uniform = std::fabs(losses[0] - std::log((float)V));
     bool ok = report("uniform logits -> log(V)", N, V, e_uniform, 1e-4f);
-    std::printf("  N=%-5d V=%-6d %-30s got %.4f  %s\n", N, V, "confident correct -> ~0",
-                losses[1], losses[1] < 1e-3f ? "PASS" : "FAIL");
+    std::printf("  N=%-5d V=%-6d %-30s got %.4f  %s\n", N, V, "confident correct -> ~0", losses[1], losses[1] < 1e-3f ? "PASS" : "FAIL");
     ok &= losses[1] < 1e-3f;
-    std::printf("  N=%-5d V=%-6d %-30s got %.4f  %s\n", N, V, "confident wrong -> large, finite",
-                losses[2], (losses[2] > 10.0f && std::isfinite(losses[2])) ? "PASS" : "FAIL");
+    std::printf("  N=%-5d V=%-6d %-30s got %.4f  %s\n", N, V, "confident wrong -> large, finite", losses[2], (losses[2] > 10.0f && std::isfinite(losses[2])) ? "PASS" : "FAIL");
     ok &= losses[2] > 10.0f && std::isfinite(losses[2]);
     return ok;
 }
@@ -236,10 +232,10 @@ int main() {
         int N, V;
     };
     S shapes[] = {
-        {4, 5},      // tiny
-        {7, 11},     // ragged
-        {256, 1024}, // realistic block of tokens
-        {64, 50257}, // GPT-2 vocab
+        {4, 5},       // tiny
+        {7, 11},      // ragged
+        {256, 1024},  // realistic block of tokens
+        {64, 50257},  // GPT-2 vocab
     };
 
     std::printf("[cross-entropy forward]\n");
@@ -259,7 +255,6 @@ int main() {
     for (S s : small)
         if (!test_finite_difference(s.N, s.V, rng)) ++failures;
 
-    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures,
-                failures == 1 ? "" : "s");
+    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;
 }
