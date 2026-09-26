@@ -34,7 +34,7 @@ set(TESTS
   philox philox_stream philox_dist
   gemm cublas_layout
   residual gelu linear layernorm embedding
-  # attention
+  attention
   # cross_entropy adamw
 )
 
