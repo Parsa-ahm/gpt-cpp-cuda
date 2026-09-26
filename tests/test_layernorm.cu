@@ -27,8 +27,7 @@ static const float LN_EPS = 1e-5f;
 
 // ---------------------------------------------------------------- CPU oracles
 
-static void cpu_ln_fwd(const float* x, const float* w, const float* b, float* out, float* mean,
-                       float* rstd, int N, int C) {
+static void cpu_ln_fwd(const float* x, const float* w, const float* b, float* out, float* mean, float* rstd, int N, int C) {
     for (int n = 0; n < N; ++n) {
         double m = 0.0;
         for (int c = 0; c < C; ++c) m += (double)x[n * C + c];
@@ -49,8 +48,7 @@ static void cpu_ln_fwd(const float* x, const float* w, const float* b, float* ou
     }
 }
 
-static void cpu_ln_bwd(const float* dout, const float* x, const float* w, const float* mean,
-                       const float* rstd, float* dx, float* dw, float* db, int N, int C) {
+static void cpu_ln_bwd(const float* dout, const float* x, const float* w, const float* mean, const float* rstd, float* dx, float* dw, float* db, int N, int C) {
     std::vector<double> accw(C, 0.0), accb(C, 0.0);
     for (int n = 0; n < N; ++n) {
         double m = (double)mean[n], rs = (double)rstd[n];
@@ -96,9 +94,7 @@ static bool report(const char* label, int N, int C, float err, float tol) {
 
 // ---------------------------------------------------------------- GPU helpers
 
-static void gpu_forward(const std::vector<float>& x, const std::vector<float>& w,
-                        const std::vector<float>& b, std::vector<float>& out,
-                        std::vector<float>& mean, std::vector<float>& rstd, int N, int C) {
+static void gpu_forward(const std::vector<float>& x, const std::vector<float>& w, const std::vector<float>& b, std::vector<float>& out, std::vector<float>& mean, std::vector<float>& rstd, int N, int C) {
     Device_Buffer dx(N * C), dw(C), db(C), dout(N * C), dmean(N), drstd(N);
     dx.upload(const_cast<float*>(x.data()));
     dw.upload(const_cast<float*>(w.data()));
@@ -189,8 +185,7 @@ static bool test_backward(int N, int C, std::mt19937& rng) {
     d_rstd.upload(rstd.data());
     d_dw.upload(junk_dw.data());
     d_db.upload(junk_db.data());
-    launch_layernorm_bwd(d_dout.ptr, d_x.ptr, d_w.ptr, d_mean.ptr, d_rstd.ptr, d_dx.ptr, d_dw.ptr,
-                         d_db.ptr, N, C);
+    launch_layernorm_bwd(d_dout.ptr, d_x.ptr, d_w.ptr, d_mean.ptr, d_rstd.ptr, d_dx.ptr, d_dw.ptr, d_db.ptr, N, C);
     d_dx.download(gx.data());
     d_dw.download(gw.data());
     d_db.download(gb.data());
@@ -204,8 +199,7 @@ static bool test_backward(int N, int C, std::mt19937& rng) {
     d_db.free_it();
 
     std::vector<float> rx(N * C), rw = junk_dw, rb = junk_db;
-    cpu_ln_bwd(dout.data(), x.data(), w.data(), mean.data(), rstd.data(), rx.data(), rw.data(),
-               rb.data(), N, C);
+    cpu_ln_bwd(dout.data(), x.data(), w.data(), mean.data(), rstd.data(), rx.data(), rw.data(), rb.data(), N, C);
 
     bool ok = report("bwd  dx", N, C, worst_err(gx, rx), 1e-4f);
     ok &= report("bwd  dw +=", N, C, worst_err(gw, rw), 1e-4f);
@@ -236,8 +230,7 @@ static bool test_finite_difference(int N, int C, std::mt19937& rng) {
         d_rstd.upload(rstd.data());
         d_dw.upload(zw.data());
         d_db.upload(zb.data());
-        launch_layernorm_bwd(d_dout.ptr, d_x.ptr, d_w.ptr, d_mean.ptr, d_rstd.ptr, d_dx.ptr,
-                             d_dw.ptr, d_db.ptr, N, C);
+        launch_layernorm_bwd(d_dout.ptr, d_x.ptr, d_w.ptr, d_mean.ptr, d_rstd.ptr, d_dx.ptr, d_dw.ptr, d_db.ptr, N, C);
         d_dx.download(gx.data());
         d_dw.download(gw.data());
         d_db.download(gb.data());
@@ -290,11 +283,11 @@ int main() {
         int N, C;
     };
     S shapes[] = {
-        {4, 3},     // tiny
-        {7, 5},     // no divisibility
-        {256, 384}, // GPT-2 small width, one block of tokens
-        {64, 768},  // GPT-2 124M width
-        {129, 97},  // ragged
+        {4, 3},      // tiny
+        {7, 5},      // no divisibility
+        {256, 384},  // GPT-2 small width, one block of tokens
+        {64, 768},   // GPT-2 124M width
+        {129, 97},   // ragged
     };
 
     std::printf("[layernorm forward]\n");
@@ -314,7 +307,6 @@ int main() {
     for (S s : small)
         if (!test_finite_difference(s.N, s.C, rng)) ++failures;
 
-    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures,
-                failures == 1 ? "" : "s");
+    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;
 }

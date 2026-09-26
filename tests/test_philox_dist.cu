@@ -79,8 +79,7 @@ int main() {
                 max_dev = dev;
         }
         bool ok = in_range && max_dev < 0.05;  // ~5% band; per-bin noise ~0.6%
-        std::printf("  range [0,1): %s   max bin deviation: %.3f%%  -> %s\n",
-                    in_range ? "ok" : "OUT OF RANGE", max_dev * 100.0, ok ? "PASS" : "FAIL");
+        std::printf("  range [0,1): %s   max bin deviation: %.3f%%  -> %s\n", in_range ? "ok" : "OUT OF RANGE", max_dev * 100.0, ok ? "PASS" : "FAIL");
         if (!ok)
             ++failures;
     }
@@ -127,19 +126,15 @@ int main() {
         bool ok = finite && std::fabs(mean) < 0.01 && std::fabs(var - 1.0) < 0.02 &&
                   std::fabs(p1 - 68.27) < 0.5 && std::fabs(p2 - 95.45) < 0.5 &&
                   std::fabs(p3 - 99.73) < 0.3;
-        std::printf("  finite: %s   mean %.4f (want 0)   var %.4f (want 1)\n",
-                    finite ? "ok" : "NaN/Inf", mean, var);
-        std::printf("  sigma mass: 1s %.2f%% (68.27)  2s %.2f%% (95.45)  3s %.2f%% (99.73)  -> %s\n",
-                    p1, p2, p3, ok ? "PASS" : "FAIL");
+        std::printf("  finite: %s   mean %.4f (want 0)   var %.4f (want 1)\n", finite ? "ok" : "NaN/Inf", mean, var);
+        std::printf("  sigma mass: 1s %.2f%% (68.27)  2s %.2f%% (95.45)  3s %.2f%% (99.73)  -> %s\n", p1, p2, p3, ok ? "PASS" : "FAIL");
         if (!ok)
             ++failures;
 
         bool ok_e = std::fabs(mean_e) < 0.02 && std::fabs(var_e - 1.0) < 0.03;
         bool ok_o = std::fabs(mean_o) < 0.02 && std::fabs(var_o - 1.0) < 0.03;
-        std::printf("  cos branch: mean %.4f var %.4f -> %s\n", mean_e, var_e,
-                    ok_e ? "PASS" : "FAIL");
-        std::printf("  sin branch (cached): mean %.4f var %.4f -> %s\n", mean_o, var_o,
-                    ok_o ? "PASS" : "FAIL");
+        std::printf("  cos branch: mean %.4f var %.4f -> %s\n", mean_e, var_e, ok_e ? "PASS" : "FAIL");
+        std::printf("  sin branch (cached): mean %.4f var %.4f -> %s\n", mean_o, var_o, ok_o ? "PASS" : "FAIL");
         if (!ok_e)
             ++failures;
         if (!ok_o)
@@ -168,7 +163,6 @@ int main() {
         CUDA_CHECK(cudaFree(d_out));
     }
 
-    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures,
-                failures == 1 ? "" : "s");
+    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;
 }

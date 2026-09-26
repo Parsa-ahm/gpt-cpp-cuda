@@ -26,8 +26,7 @@ static const float B1 = 0.9f, B2 = 0.95f, EPS = 1e-8f;
 
 // ---------------------------------------------------------------- CPU oracle
 
-static void cpu_adamw(float* p, const float* g, float* m, float* v, int n, float lr, float beta1,
-                      float beta2, float eps, float wd, int t) {
+static void cpu_adamw(float* p, const float* g, float* m, float* v, int n, float lr, float beta1, float beta2, float eps, float wd, int t) {
     double c1 = 1.0 - std::pow((double)beta1, (double)t);
     double c2 = 1.0 - std::pow((double)beta2, (double)t);
     for (int i = 0; i < n; ++i) {
@@ -53,16 +52,14 @@ static float worst_err(const std::vector<float>& got, const std::vector<float>& 
 
 static bool report(const char* label, int n, float lr, float wd, float err, float tol) {
     bool ok = err <= tol;
-    std::printf("  n=%-6d lr=%-7.4f wd=%-5.2f %-24s err=%.2e  %s\n", n, lr, wd, label, err,
-                ok ? "PASS" : "FAIL");
+    std::printf("  n=%-6d lr=%-7.4f wd=%-5.2f %-24s err=%.2e  %s\n", n, lr, wd, label, err, ok ? "PASS" : "FAIL");
     return ok;
 }
 
 // ---------------------------------------------------------------- GPU helper
 
 // Runs `steps` AdamW updates on the device, leaving the results in p, m, v.
-static void gpu_run(std::vector<float>& p, const std::vector<float>& g, std::vector<float>& m,
-                    std::vector<float>& v, float lr, float wd, int steps) {
+static void gpu_run(std::vector<float>& p, const std::vector<float>& g, std::vector<float>& m, std::vector<float>& v, float lr, float wd, int steps) {
     int n = (int)p.size();
     Device_Buffer d_p(n), d_g(n), d_m(n), d_v(n);
     d_p.upload(p.data());
@@ -115,11 +112,9 @@ static bool test_bias_correction() {
     float worst = 0.0f;
     for (int i = 0; i < n; ++i) worst = std::fmax(worst, std::fabs((p[i] - gp[i]) - lr));
     bool ok = worst <= 1e-6f;
-    std::printf("  %-52s moved %.6f, expected %.6f  %s\n", "step 1 moves by lr (bias corrected)",
-                p[0] - gp[0], lr, ok ? "PASS" : "FAIL");
+    std::printf("  %-52s moved %.6f, expected %.6f  %s\n", "step 1 moves by lr (bias corrected)", p[0] - gp[0], lr, ok ? "PASS" : "FAIL");
     if (!ok)
-        std::printf("      -> if it moved by about %.6f you dropped the 1/(1-beta^t) terms\n",
-                    lr * (1.0f - B1));
+        std::printf("      -> if it moved by about %.6f you dropped the 1/(1-beta^t) terms\n", lr * (1.0f - B1));
     return ok;
 }
 
@@ -141,8 +136,7 @@ static bool test_decoupled() {
     float diff = 0.0f;
     for (int i = 0; i < n; ++i) diff = std::fmax(diff, std::fabs(p1[i] - p2[i]));
     bool ok = diff > 1e-4f;
-    std::printf("  %-52s gap %.6f  %s\n", "AdamW differs from Adam+L2 (decoupled wd)", diff,
-                ok ? "PASS" : "FAIL");
+    std::printf("  %-52s gap %.6f  %s\n", "AdamW differs from Adam+L2 (decoupled wd)", diff, ok ? "PASS" : "FAIL");
     if (!ok) std::printf("      -> they matched, so weight decay went through m and v\n");
     return ok;
 }
@@ -185,8 +179,7 @@ static bool test_convergence(std::mt19937& rng) {
     d_v.free_it();
 
     bool ok = monotonic && final_loss < 1e-6;
-    std::printf("  %-52s final %.3e, monotonic %s  %s\n", "minimise sum(x^2) in 200 steps",
-                final_loss, monotonic ? "yes" : "NO", ok ? "PASS" : "FAIL");
+    std::printf("  %-52s final %.3e, monotonic %s  %s\n", "minimise sum(x^2) in 200 steps", final_loss, monotonic ? "yes" : "NO", ok ? "PASS" : "FAIL");
     return ok;
 }
 
@@ -212,7 +205,6 @@ int main() {
     std::printf("[convergence]\n");
     if (!test_convergence(rng)) ++failures;
 
-    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures,
-                failures == 1 ? "" : "s");
+    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;
 }

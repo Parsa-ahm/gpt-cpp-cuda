@@ -70,8 +70,7 @@ static void cpu_attn_fwd(const float* qkv, float* att, float* out, int B, int T,
             }
 }
 
-static void cpu_attn_bwd(const float* qkv, const float* att, const float* dout, float* dqkv, int B,
-                         int T, int C, int NH) {
+static void cpu_attn_bwd(const float* qkv, const float* att, const float* dout, float* dqkv, int B, int T, int C, int NH) {
     int HS = C / NH;
     double scale = 1.0 / std::sqrt((double)HS);
     for (int b = 0; b < B; ++b)
@@ -125,15 +124,13 @@ static float worst_err(const std::vector<float>& got, const std::vector<float>& 
 
 static bool report(const char* label, int B, int T, int C, int NH, float err, float tol) {
     bool ok = err <= tol;
-    std::printf("  B=%-2d T=%-4d C=%-4d NH=%-3d %-26s err=%.2e  %s\n", B, T, C, NH, label, err,
-                ok ? "PASS" : "FAIL");
+    std::printf("  B=%-2d T=%-4d C=%-4d NH=%-3d %-26s err=%.2e  %s\n", B, T, C, NH, label, err, ok ? "PASS" : "FAIL");
     return ok;
 }
 
 // ---------------------------------------------------------------- GPU helpers
 
-static void gpu_forward(const std::vector<float>& qkv, std::vector<float>& att,
-                        std::vector<float>& out, int B, int T, int C, int NH) {
+static void gpu_forward(const std::vector<float>& qkv, std::vector<float>& att, std::vector<float>& out, int B, int T, int C, int NH) {
     Device_Buffer d_qkv(B * T * 3 * C), d_att(B * NH * T * T),
         d_out(B * T * C);
     d_qkv.upload(const_cast<float*>(qkv.data()));
@@ -145,9 +142,7 @@ static void gpu_forward(const std::vector<float>& qkv, std::vector<float>& att,
     d_out.free_it();
 }
 
-static void gpu_backward(const std::vector<float>& qkv, const std::vector<float>& att,
-                         const std::vector<float>& dout, std::vector<float>& dqkv, int B, int T,
-                         int C, int NH) {
+static void gpu_backward(const std::vector<float>& qkv, const std::vector<float>& att, const std::vector<float>& dout, std::vector<float>& dqkv, int B, int T, int C, int NH) {
     std::vector<float> zero((size_t)B * T * 3 * C, 0.0f);
     Device_Buffer d_qkv(B * T * 3 * C), d_att(B * NH * T * T),
         d_dout(B * T * C);
@@ -157,8 +152,7 @@ static void gpu_backward(const std::vector<float>& qkv, const std::vector<float>
     d_att.upload(const_cast<float*>(att.data()));
     d_dout.upload(const_cast<float*>(dout.data()));
     d_dqkv.upload(zero.data());
-    launch_attention_bwd(d_qkv.ptr, d_att.ptr, d_dout.ptr, d_datt.ptr, d_dpre.ptr, d_dqkv.ptr, B, T,
-                         C, NH);
+    launch_attention_bwd(d_qkv.ptr, d_att.ptr, d_dout.ptr, d_datt.ptr, d_dpre.ptr, d_dqkv.ptr, B, T, C, NH);
     d_dqkv.download(dqkv.data());
     d_qkv.free_it();
     d_att.free_it();
@@ -284,10 +278,10 @@ int main() {
         int B, T, C, NH;
     };
     S shapes[] = {
-        {1, 4, 4, 1},    // tiny, single head
-        {2, 6, 8, 2},    // two heads
-        {2, 13, 12, 3},  // ragged T, three heads
-        {2, 64, 384, 6}, // GPT-2 small config
+        {1, 4, 4, 1},     // tiny, single head
+        {2, 6, 8, 2},     // two heads
+        {2, 13, 12, 3},   // ragged T, three heads
+        {2, 64, 384, 6},  // GPT-2 small config
     };
 
     std::printf("[causality probe - run this one first]\n");
@@ -307,7 +301,6 @@ int main() {
     for (S s : small)
         if (!test_finite_difference(s.B, s.T, s.C, s.NH, rng)) ++failures;
 
-    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures,
-                failures == 1 ? "" : "s");
+    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;
 }

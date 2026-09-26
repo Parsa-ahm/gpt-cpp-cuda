@@ -28,8 +28,7 @@
 
 // ---------------------------------------------------------------- CPU oracles
 
-static void cpu_linear_fwd(const float* x, const float* W, const float* b, float* out, int N,
-                           int C, int OC) {
+static void cpu_linear_fwd(const float* x, const float* W, const float* b, float* out, int N, int C, int OC) {
     for (int n = 0; n < N; ++n)
         for (int o = 0; o < OC; ++o) {
             double sum = b ? (double)b[o] : 0.0;
@@ -38,8 +37,7 @@ static void cpu_linear_fwd(const float* x, const float* W, const float* b, float
         }
 }
 
-static void cpu_linear_bwd(const float* x, const float* W, const float* dy, float* dx, float* dW,
-                           float* db, int N, int C, int OC) {
+static void cpu_linear_bwd(const float* x, const float* W, const float* dy, float* dx, float* dW, float* db, int N, int C, int OC) {
     // dx = dy @ W^T   (assign)
     for (int n = 0; n < N; ++n)
         for (int c = 0; c < C; ++c) {
@@ -75,16 +73,13 @@ static float worst_err(const std::vector<float>& got, const std::vector<float>& 
 
 static bool report(const char* label, int N, int C, int OC, float err, float tol) {
     bool ok = err <= tol;
-    std::printf("  N=%-4d C=%-4d OC=%-4d  %-26s err=%.2e  %s\n", N, C, OC, label, err,
-                ok ? "PASS" : "FAIL");
+    std::printf("  N=%-4d C=%-4d OC=%-4d  %-26s err=%.2e  %s\n", N, C, OC, label, err, ok ? "PASS" : "FAIL");
     return ok;
 }
 
 // ---------------------------------------------------------------- GPU helpers
 
-static void gpu_forward(const std::vector<float>& x, const std::vector<float>& W,
-                        const std::vector<float>& b, std::vector<float>& out, int N, int C,
-                        int OC) {
+static void gpu_forward(const std::vector<float>& x, const std::vector<float>& W, const std::vector<float>& b, std::vector<float>& out, int N, int C, int OC) {
     Device_Buffer dx(N * C), dW(C * OC), db(OC), dout(N * OC);
     dx.upload(const_cast<float*>(x.data()));
     dW.upload(const_cast<float*>(W.data()));
@@ -216,13 +211,15 @@ int main() {
     std::mt19937 rng(31337);
     int failures = 0;
 
-    struct S { int N, C, OC; };
+    struct S {
+        int N, C, OC;
+    };
     S shapes[] = {
-        {4, 3, 2},       // tiny
-        {7, 5, 3},       // no divisibility
-        {64, 384, 1536}, // GPT-2 small MLP expand, one block of tokens
-        {256, 384, 384}, // square-ish projection
-        {129, 97, 61},   // ragged
+        {4, 3, 2},        // tiny
+        {7, 5, 3},        // no divisibility
+        {64, 384, 1536},  // GPT-2 small MLP expand, one block of tokens
+        {256, 384, 384},  // square-ish projection
+        {129, 97, 61},    // ragged
     };
 
     std::printf("[linear forward]\n");
@@ -240,7 +237,6 @@ int main() {
     for (S s : small)
         if (!test_finite_difference(s.N, s.C, s.OC, rng)) ++failures;
 
-    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures,
-                failures == 1 ? "" : "s");
+    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;
 }

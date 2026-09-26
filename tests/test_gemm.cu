@@ -61,8 +61,7 @@ static bool test_shape(int M, int K, int N, LaunchFn launch, std::mt19937& rng) 
         if (d > max_abs) max_abs = d;
     }
     bool ok = max_abs < 1e-3f;
-    std::printf("  M=%-4d K=%-4d N=%-4d  max|err|=%.2e  %s\n", M, K, N, max_abs,
-                ok ? "PASS" : "FAIL");
+    std::printf("  M=%-4d K=%-4d N=%-4d  max|err|=%.2e  %s\n", M, K, N, max_abs, ok ? "PASS" : "FAIL");
     return ok;
 }
 
@@ -70,7 +69,9 @@ int main() {
     std::mt19937 rng(12345);
     int failures = 0;
 
-    struct S { int M, K, N; };
+    struct S {
+        int M, K, N;
+    };
 
     std::printf("[naive gemm correctness]\n");
     S shapes[] = {
@@ -88,8 +89,16 @@ int main() {
     // Tiled kernel: now handles ragged (non-multiple-of-16) shapes too.
     std::printf("[tiled gemm correctness]  (incl. ragged edges)\n");
     S tiled_shapes[] = {
-        {2, 3, 2},      {64, 64, 64},   {128, 96, 64}, {37, 53, 41},  {1, 1, 1},
-        {100, 1, 100},  {17, 200, 3},   {256, 256, 256}, {513, 511, 257}, {500, 500, 500},
+        {2, 3, 2},
+        {64, 64, 64},
+        {128, 96, 64},
+        {37, 53, 41},
+        {1, 1, 1},
+        {100, 1, 100},
+        {17, 200, 3},
+        {256, 256, 256},
+        {513, 511, 257},
+        {500, 500, 500},
     };
     for (S s : tiled_shapes)
         if (!test_shape(s.M, s.K, s.N, launch_gemm_tiled, rng)) ++failures;
@@ -98,13 +107,16 @@ int main() {
     // (M,N multiples of 64; K a multiple of 8).
     std::printf("[reg-blocked gemm correctness]  (divisible shapes only)\n");
     S reg_shapes[] = {
-        {64, 8, 64},     {64, 64, 64},   {128, 128, 128},
-        {256, 512, 128}, {256, 256, 256}, {512, 512, 512},
+        {64, 8, 64},
+        {64, 64, 64},
+        {128, 128, 128},
+        {256, 512, 128},
+        {256, 256, 256},
+        {512, 512, 512},
     };
     for (S s : reg_shapes)
         if (!test_shape(s.M, s.K, s.N, launch_gemm_reg, rng)) ++failures;
 
-    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures,
-                failures == 1 ? "" : "s");
+    std::printf("\n%s (%d failure%s)\n", failures == 0 ? "ALL PASS" : "FAILED", failures, failures == 1 ? "" : "s");
     return failures == 0 ? 0 : 1;
 }
