@@ -1,6 +1,6 @@
 #pragma once
 #include <cuda_runtime.h>
-#include <cuda_check.hpp>
+#include "core/cuda_check.hpp"
 
 __global__ void gelu_fwd(const float* x, float* y, int n) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;

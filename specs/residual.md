@@ -1,5 +1,0 @@
-# Residual add spec
-
-```
-
-```
