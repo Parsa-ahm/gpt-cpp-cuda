@@ -5,9 +5,11 @@ cmake-build-*/
 *.obj
 compile_commands.json
 
-# Dataset (downloaded, not committed)
+# Dataset (downloaded, not committed). The prep/export scripts ARE committed:
+# they are the reproducible path from a clean clone to the binaries.
 data/*
 !data/.gitkeep
+!data/*.py
 
 # Metrics / logs
 *.csv
