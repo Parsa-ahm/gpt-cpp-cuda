@@ -28,15 +28,13 @@ target_link_libraries(gpt PRIVATE CUDA::cublas)
 target_compile_options(gpt PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-Wall -Wextra>)
 
 # One target per tests/test_<name>.cu, registered with ctest as <name>.
-# Uncomment an op once its implementation lands; the harnesses are already written
-# for attention, cross_entropy and adamw.
+# Uncomment an op once its implementation lands.
 set(TESTS
   philox philox_stream philox_dist
   gemm cublas_layout
   residual gelu linear layernorm embedding
   attention
-  cross_entropy
-  # adamw
+  cross_entropy adamw
 )
 
 foreach(name IN LISTS TESTS)
