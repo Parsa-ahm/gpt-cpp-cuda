@@ -35,7 +35,8 @@ set(TESTS
   gemm cublas_layout
   residual gelu linear layernorm embedding
   attention
-  # cross_entropy adamw
+  cross_entropy
+  # adamw
 )
 
 foreach(name IN LISTS TESTS)
