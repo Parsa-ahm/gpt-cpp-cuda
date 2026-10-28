@@ -18,8 +18,8 @@ any autograd or tensor library is not. FP32, single GPU.
 |---|---|
 | 0 Scaffold + Philox PRNG | done |
 | 1 SGEMM ladder (naive / tiled / register-blocked, ~40% cuBLAS) | done |
-| 2 Ops fwd+bwd, gradient-checked | in progress |
-| 3 Train small GPT | |
+| 2 Ops fwd+bwd, gradient-checked | done |
+| 3 Train small GPT | in progress |
 | 4 GPT-2 124M weights, match HF logits | |
 | 5 Fused attention + benchmarks + roofline | |
 | 6 Writeup | |

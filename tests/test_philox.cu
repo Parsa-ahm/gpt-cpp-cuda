@@ -9,7 +9,7 @@
 //   (3) determinism: same (ctr,key) called twice gives the same words.
 //
 // The expected values below are the ground truth (independently generated from
-// the canonical Philox definition). They are just numbers on purpose — the round
+// the canonical Philox definition). They are just numbers on purpose: the round
 // derivation stays yours; this file only judges the result.
 //
 // Exit code 0 = all pass; nonzero = something failed (so CTest reports red).

@@ -1,5 +1,5 @@
 // ============================================================================
-// Distribution harness — validates the converters statistically.
+// Distribution harness: validates the converters statistically.
 //
 //   (1) uniformity : next_float() over ~2M draws is flat in [0,1).
 //                    range check + per-bin count within tolerance (chi-ish).
@@ -7,7 +7,7 @@
 //                    mean ~= 0, var ~= 1, and the 1/2/3-sigma mass matches
 //                    68.27 / 95.45 / 99.73 %.
 //   (3) cached branch: split draws into even (cos) and odd (sin=cached).
-//                    BOTH subsets must independently be N(0,1) — proves the
+//                    BOTH subsets must independently be N(0,1), which proves the
 //                    cached value is a valid, independent normal, not a dup.
 //   (4) device finite: next_n() on the GPU produces no NaN/Inf.
 //

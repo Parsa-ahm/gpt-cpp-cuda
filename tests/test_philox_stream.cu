@@ -1,5 +1,5 @@
 // ============================================================================
-// PhiloxStream harness — validates the per-thread stream wrapper.
+// PhiloxStream harness: validates the per-thread stream wrapper.
 //
 //   (1) continuity : 8 next_u32() calls == philox(block=0) ++ philox(block=1),
 //                    in word order. Proves the refill/cursor/block logic.

@@ -7,8 +7,8 @@ __global__ void layernorm_fwd(
     const float* w,  // gain (C)
     const float* b,  // bias (C)
     float* out,      // output (N, C)
-    float* mean,     // cached (C)
-    float* rstd,     // cached (C)
+    float* mean,     // cached (N)
+    float* rstd,     // cached (N)
     int N,
     int C
 ) {
@@ -39,8 +39,8 @@ inline void launch_layernorm_fwd(
     const float* d_w,  // gain (C)
     const float* d_b,  // bias (C)
     float* d_out,      // output (N, C)
-    float* d_mean,     // cached (C)
-    float* d_rstd,     // cached (C)
+    float* d_mean,     // cached (N)
+    float* d_rstd,     // cached (N)
     int d_N,
     int d_C
 ) {

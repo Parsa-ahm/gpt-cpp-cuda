@@ -16,5 +16,6 @@ data/*
 *.log
 
 # OS / editor
+.vscode/
 .DS_Store
 *.sync-conflict-*

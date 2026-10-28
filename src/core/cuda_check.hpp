@@ -9,7 +9,7 @@
 int report_cuda_devices();
 
 // ---------------------------------------------------------------------------
-// CUDA_CHECK(expr) — wrap any CUDA runtime call that returns cudaError_t.
+// CUDA_CHECK(expr): wrap any CUDA runtime call that returns cudaError_t.
 //
 //     CUDA_CHECK(cudaMalloc(&ptr, bytes));
 //
@@ -30,7 +30,7 @@ int report_cuda_devices();
     } while (0)
 
 // ---------------------------------------------------------------------------
-// CUDA_CHECK_KERNEL() — call immediately after a <<<>>> launch.
+// CUDA_CHECK_KERNEL(): call immediately after a <<<>>> launch.
 //
 // A launch is asynchronous, so errors arrive in two places and you need both:
 //   cudaGetLastError()      launch-config problems (bad block dim, too much
